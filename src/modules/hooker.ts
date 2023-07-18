@@ -1,15 +1,39 @@
 import WebSocket_Interface from './interfaces/ws';
-import { check_supress } from './pipes/packet_filter';
+import check_supress from './pipes/packet_filter';
 /** Original WebSocket **/
 const ws_: WebSocket_Interface = window.WebSocket.prototype;
 let original_onmessage: object;
 let original_ws: any = WebSocket;
+let ws: any;
+function injector_(event: object): void {
+    // @ts-ignore
+    if (check_supress(event.data) == true) {
+        return;
+    } else {
+        /** TODO: This fixes issue when kogama doesnt connected to the server. **/
+        try {
+            ws._server(event);
+        } catch(E) {
+
+        }
+    }
+}
 let hook: object = function(target: WebSocket_Interface): void {
     // @ts-ignore
     WebSocket = class {
         constructor(url: string | URL, protocols: string | string[] | undefined) {
             // @ts-ignore
-            let ws: any = window.ws = new original_ws(...arguments);
+            ws = top.ws = window.ws = new original_ws(...arguments);
+            function backend_(event: object) {
+                injector_(event);
+                if (!ws.hooked) {
+                    ws.removeEventListener('message', backend_);
+                    ws._server = ws.onmessage;
+                    ws.onmessage = injector_;
+                    ws.hooked = true;
+                }
+            };
+            ws.addEventListener('message', backend_)
             return ws;
         };
         readonly CONNECTING = 0;
@@ -22,21 +46,6 @@ let hook: object = function(target: WebSocket_Interface): void {
         close(error: number) {
             original_ws.prototype.close.call(this, [ error ]);
         };
-        set onmessage(value: object) {
-            original_onmessage = new Proxy(value, {
-                apply(target: object, thisArg: object, argArray: any[]) {
-                    if (check_supress(argArray[0].data) == true) {
-                        return 0;
-                    } else {
-                        // @ts-ignore
-                        return target.apply(thisArg, argArray);
-                    }
-                },
-            });
-        }
-        get onmessage() {
-            return original_onmessage;
-        }
     };
 };
 

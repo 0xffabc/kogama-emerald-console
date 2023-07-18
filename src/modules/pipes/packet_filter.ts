@@ -16,8 +16,4 @@ function check_supress(packet: number[]): boolean {
     return false;
 };
 
-export { 
-    players,
-    myPlayerId,
-    check_supress
- };
+export default check_supress;

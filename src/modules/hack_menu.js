@@ -1,21 +1,21 @@
-import ws from './interfaces/ws';
-
-function menu_init(): HTMLDivElement {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function menu_init() {
     const client_menu = document.createElement("div");
     // @ts-ignore
     client_menu.style = [
-      "position: fixed",
-      "color: rgba(0, 0, 0, 0.5)",
-      "width: 450px",
-      "height: 300px",
-      "background: rgba(40, 40, 40)",
-      "color: rgb(120, 120, 120)",
-      "border-radius: 20px",
-      "z-index: 100",
-      "top: 25%",
-      "left: 25%"
-      ].join(";");
-      client_menu.innerHTML = `
+        "position: fixed",
+        "color: rgba(0, 0, 0, 0.5)",
+        "width: 450px",
+        "height: 300px",
+        "background: rgba(40, 40, 40)",
+        "color: rgb(120, 120, 120)",
+        "border-radius: 20px",
+        "z-index: 100",
+        "top: 25%",
+        "left: 25%"
+    ].join(";");
+    client_menu.innerHTML = `
          <header style = "text-align: center; font-family: Arial; font-size: 20px; width: 100%; background-color: rgb(50, 50, 50); border-top-right-radius: 20px; border-top-left-radius: 20px; z-index: 999; height: 50px; ">
              Emerald Client
              <button onclick = "this.parentElement.parentElement.style.display = 'none'" style = "width: 10%; height: 50px; position: absolute; pointer-events: all; right: 0; border-top-right-radius: 20px; border: 0; font-size: 30px; background-color: rgb(75, 75, 75);"> × </button>
@@ -43,14 +43,12 @@ function menu_init(): HTMLDivElement {
             </block>
          </section>
       `;
-      client_menu.id = "console_";
-      // @ts-ignore
-      document.documentElement.append(client_menu);
-
-      // @ts-ignore
-      top.console.log("[Emerald Console] Hack is ready!");
-
-      return client_menu;
-};
-
-export default menu_init;
+    client_menu.id = "console_";
+    // @ts-ignore
+    document.documentElement.append(client_menu);
+    // @ts-ignore
+    top.console.log("[Emerald Console] Hack is ready!");
+    return client_menu;
+}
+;
+exports.default = menu_init;

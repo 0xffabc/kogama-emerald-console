@@ -1,8 +1,7 @@
-import ws from './interfaces/ws';
 
 type Timer = /** Not finished yet... **/ any;
 function prop_wait(callback: any): void {
-    const check_exists: any = function(value: ws) {
+    const check_exists: any = function() {
         let has_prop: boolean = false;
         eval((function check_if_prop_exists(): void {
             // @ts-ignore

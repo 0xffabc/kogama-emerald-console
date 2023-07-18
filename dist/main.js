@@ -13,21 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const prop_wait_1 = __importDefault(__webpack_require__(/*! ./modules/prop_wait */ "./src/modules/prop_wait.js"));
 const hack_menu_1 = __importDefault(__webpack_require__(/*! ./modules/hack_menu */ "./src/modules/hack_menu.js"));
 let kogama_ws = window.WebSocket.prototype;
 const hooker_1 = __importDefault(__webpack_require__(/*! ./modules/hooker */ "./src/modules/hooker.js"));
 // @ts-ignore
 (0, hooker_1.default)(kogama_ws);
-(0, prop_wait_1.default)(function () {
-    const game_ws = eval((function assign_game_ws() {
-        const window_ = Object.assign({}, window);
-        // @ts-ignore
-        return window_.ws;
-    }).toString());
-    (0, hack_menu_1.default)(game_ws);
-});
-console.log("[Emerald Console] 3m3r4ld 0n t0P");
+(0, hack_menu_1.default)();
+// @ts-ignore
+top.console.log("[Emerald Console] 3m3r4ld 0n t0P");
 
 
 /***/ }),
@@ -40,7 +33,7 @@ console.log("[Emerald Console] 3m3r4ld 0n t0P");
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-function menu_init(ws) {
+function menu_init() {
     const client_menu = document.createElement("div");
     // @ts-ignore
     client_menu.style = [
@@ -85,8 +78,9 @@ function menu_init(ws) {
       `;
     client_menu.id = "console_";
     // @ts-ignore
-    document.getElementById("main-content").append(client_menu);
-    console.log("[Emerald Console] Hack is ready!", ws);
+    document.documentElement.append(client_menu);
+    // @ts-ignore
+    top.console.log("[Emerald Console] Hack is ready!");
     return client_menu;
 }
 ;
@@ -99,15 +93,33 @@ exports["default"] = menu_init;
 /*!*******************************!*\
   !*** ./src/modules/hooker.js ***!
   \*******************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const packet_filter_1 = __webpack_require__(/*! ./pipes/packet_filter */ "./src/modules/pipes/packet_filter.js");
+const packet_filter_1 = __importDefault(__webpack_require__(/*! ./pipes/packet_filter */ "./src/modules/pipes/packet_filter.js"));
 /** Original WebSocket **/
 const ws_ = window.WebSocket.prototype;
 let original_onmessage;
 let original_ws = WebSocket;
+let ws;
+function injector_(event) {
+    // @ts-ignore
+    if ((0, packet_filter_1.default)(event.data) == true) {
+        return;
+    }
+    else {
+        /** TODO: This fixes issue when kogama doesnt connected to the server. **/
+        try {
+            ws._server(event);
+        }
+        catch (E) {
+        }
+    }
+}
 let hook = function (target) {
     // @ts-ignore
     WebSocket = class {
@@ -120,7 +132,18 @@ let hook = function (target) {
             this.bufferedAmount = 0;
             this.extensions = "none";
             // @ts-ignore
-            let ws = window.ws = new original_ws(...arguments);
+            ws = top.ws = window.ws = new original_ws(...arguments);
+            function backend_(event) {
+                injector_(event);
+                if (!ws.hooked) {
+                    ws.removeEventListener('message', backend_);
+                    ws._server = ws.onmessage;
+                    ws.onmessage = injector_;
+                    ws.hooked = true;
+                }
+            }
+            ;
+            ws.addEventListener('message', backend_);
             return ws;
         }
         ;
@@ -128,22 +151,6 @@ let hook = function (target) {
             original_ws.prototype.close.call(this, [error]);
         }
         ;
-        set onmessage(value) {
-            original_onmessage = new Proxy(value, {
-                apply(target, thisArg, argArray) {
-                    if ((0, packet_filter_1.check_supress)(argArray[0].data) == true) {
-                        return 0;
-                    }
-                    else {
-                        // @ts-ignore
-                        return target.apply(thisArg, argArray);
-                    }
-                },
-            });
-        }
-        get onmessage() {
-            return original_onmessage;
-        }
     };
 };
 exports["default"] = hook;
@@ -159,7 +166,6 @@ exports["default"] = hook;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.check_supress = exports.myPlayerId = exports.players = void 0;
 let players, myPlayerId;
 function check_supress(packet) {
     switch (packet[2]) {
@@ -168,47 +174,14 @@ function check_supress(packet) {
             break;
         case 61:
             /** Parse players **/
-            exports.players = players = String.fromCharCode.apply(null, packet);
-            exports.myPlayerId = myPlayerId = players.split(":")[1].replace(',"spawnRoleAvatarIds"', "");
+            players = String.fromCharCode.apply(null, packet);
+            myPlayerId = players.split(":")[1].replace(',"spawnRoleAvatarIds"', "");
             break;
     }
     return false;
 }
-exports.check_supress = check_supress;
 ;
-
-
-/***/ }),
-
-/***/ "./src/modules/prop_wait.js":
-/*!**********************************!*\
-  !*** ./src/modules/prop_wait.js ***!
-  \**********************************/
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-function prop_wait(callback) {
-    const check_exists = function (value) {
-        let has_prop = false;
-        eval((function check_if_prop_exists() {
-            // @ts-ignore
-            if (window.ws) {
-                has_prop = true;
-            }
-        }).toString());
-        return has_prop;
-    };
-    const interval_id = setInterval(function () {
-        if (check_exists()) {
-            clearInterval(interval_id);
-            callback();
-        }
-        ;
-    }, 1000 / 60);
-}
-;
-exports["default"] = prop_wait;
+exports["default"] = check_supress;
 
 
 /***/ })

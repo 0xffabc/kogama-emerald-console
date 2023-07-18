@@ -4,8 +4,9 @@ type Timer = /** Not finished yet... **/ any;
 function prop_wait(callback: any): void {
     const check_exists: any = function(value: ws) {
         let has_prop: boolean = false;
-        eval((function(): void {
-            if (window.hasOwnProperty("ws")) {
+        eval((function check_if_prop_exists(): void {
+            // @ts-ignore
+            if (window.ws) {
                 has_prop = true;
             }
         }).toString());

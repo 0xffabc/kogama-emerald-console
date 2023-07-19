@@ -5,9 +5,9 @@ const ws_: WebSocket_Interface = window.WebSocket.prototype;
 let original_onmessage: object;
 let original_ws: any = WebSocket;
 let ws: any;
-function injector_(event: object): void {
+function injector_(event: any): void {
     // @ts-ignore
-    if (check_supress(event.data) == true) {
+    if (check_supress(event) == true) {
         return;
     } else {
         /** TODO: This fixes issue when kogama doesnt connected to the server. **/
@@ -33,7 +33,7 @@ let hook: object = function(target: WebSocket_Interface): void {
                     ws.hooked = true;
                 }
             };
-            ws.addEventListener('message', backend_)
+            ws.addEventListener('message', backend_);
             return ws;
         };
         readonly CONNECTING = 0;
